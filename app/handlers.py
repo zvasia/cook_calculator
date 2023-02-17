@@ -1,10 +1,12 @@
+import logging
 from enum import Enum
 
 from fastapi import APIRouter, Depends, Body, Query
 from pony.orm import db_session, select, commit
-from models import Recipe, Ingredient, CookingStep, Measure, Country
-import schemas
+from app.models import Recipe, Ingredient, CookingStep, Measure, Country
+import app.schemas as schemas
 
+logger = logging.getLogger(__name__) 
 router = APIRouter()
 
 
@@ -17,7 +19,6 @@ def clear_dict(source_dict):
 
 
 # Measure CRUD
-
 
 @router.get('/measure')
 @db_session
@@ -32,7 +33,9 @@ def get_measures(model: schemas.GetMeasure = Depends()) -> list[schemas.GetMeasu
 def get_or_create_measure(model: schemas.CreateMeasure) -> schemas.GetMeasure:
     measure_data = model.dict(exclude={'id'})
     if measure_data.get('country'):
+        logger.error(measure_data)
         measure_data['country'] = get_or_create_country(schemas.CreateCountry(**measure_data.get('country')))
+        
     measure_in_db = select(m for m in Measure).filter(**measure_data)
     if not measure_in_db.exists():
         measure = Measure(**measure_data)
@@ -60,49 +63,6 @@ def delete_measure(model: schemas.GetMeasure = Depends()):
     measure.delete()
     commit()
     return {'response': 'measure deleted successfully'}
-
-
-# Country CRUD
-
-
-@router.get('/country')
-@db_session
-def get_countries(model: schemas.GetCountry = Depends()) -> list[schemas.GetCountry]:
-    country_data = clear_dict(model.dict())
-    return list(select(c for c in Country).filter(**country_data))
-
-
-@router.post('/country')
-@db_session
-def get_or_create_country(model: schemas.CreateCountry) -> schemas.GetCountry:
-    country_data = clear_dict(model.dict(exclude={'id'}))
-    country_in_db = select(c for c in Country).filter(**country_data)
-    if not country_in_db.exists():
-        country = Country(**country_data)
-    else:
-        country = country_in_db.first()
-    return country
-
-
-@router.put('/country')
-@db_session
-def update_country(update_model: schemas.GetCountry, model: schemas.GetCountry = Depends()) -> schemas.GetCountry:
-    model_data = clear_dict(model.dict())
-    update_model_data = clear_dict(update_model.dict())
-    country = Country.get(**model_data)
-    for k, v in update_model_data.items():
-        setattr(country, k, v)
-    return country
-
-
-@router.patch('/country')
-@db_session
-def delete_country(model: schemas.GetCountry = Depends()):
-    model_data = clear_dict(model.dict())
-    country = Country.get(**model_data)
-    country.delete()
-    commit()
-    return {'response': 'deleted successfully'}
 
 
 # Recipes CRUD
@@ -248,3 +208,5 @@ def delete_cooking_step(model: schemas.GetCookingStep = Depends()):
     cooking_step.delete()
     commit()
     return {'response': 'deleted successfully'}
+
+

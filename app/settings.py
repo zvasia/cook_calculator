@@ -1,5 +1,5 @@
 from os import getenv
-import setenv
+import app.setenv
 
 
 PROJECT_NAME = getenv('PROJECT_NAME')

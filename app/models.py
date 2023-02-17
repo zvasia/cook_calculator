@@ -1,4 +1,4 @@
-import settings
+import app.settings as settings
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -51,11 +51,11 @@ class Country(db.Entity, ModelMixin):
 #     recipe = Set("Recipe")
 
 
-class Tag(db.Entity, ModelMixin):
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
-    ingredients = Set("Ingredient")
-    recipe = Set("Recipe")
+# class Tag(db.Entity, ModelMixin):
+#     id = PrimaryKey(int, auto=True)
+#     name = Required(str)
+#     ingredients = Set("Ingredient")
+#     recipe = Set("Recipe")
 
 
 class Measure(db.Entity, ModelMixin):
@@ -72,7 +72,7 @@ class Ingredient(db.Entity, ModelMixin):
     standard_unit_weight = Optional(Decimal)
     standard_unit_volume = Optional(Decimal)
     # name_aliases = Set(NameAlias, table='ingredient_name_aliases')
-    tags = Set(Tag, table='ingredient_tags')
+    # tags = Set(Tag, table='ingredient_tags')
     create_date = Required(date, default=datetime.now().date())
     cooking_steps = Set("CookingStep")
     recipes = Set("Recipe", table='ingredient_recipes')
@@ -98,7 +98,7 @@ class Recipe(db.Entity, ModelMixin):
     ingredients = Set(Ingredient)
     steps = Set(CookingStep)
     # name_aliases = Set(NameAlias, table='recipes_name_aliases')
-    tags = Set(Tag, table='recipe_tags')
+    # tags = Set(Tag, table='recipe_tags')
     author = Optional(User, sql_default=1)
     source = Optional(LongStr)
     create_date = Required(date, default=datetime.now().date())
